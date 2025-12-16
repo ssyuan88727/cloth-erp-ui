@@ -1,104 +1,45 @@
 <template>
   <base-page page-title="供應商管理">
     <template #actions>
-      <v-btn
-        color="primary"
-        prepend-icon="mdi-plus"
-        class="rounded-lg me-3"
-        @click="openForm('create')"
-        text="新增"
-      />
-      <v-btn
-        color="grey"
-        prepend-icon="mdi-magnify"
-        class="rounded-lg me-3"
-        @click="openForm('query')"
-        text="查詢"
-      />
-      <v-btn
-        color="success"
-        prepend-icon="mdi-export"
-        class="rounded-lg me-3"
-        @exportExcel=""
-        text="匯出Excel"
-      />
+      <v-btn color="primary" prepend-icon="mdi-plus" class="rounded-lg me-3" @click="openForm('create')" text="新增" />
+      <v-btn color="grey" prepend-icon="mdi-magnify" class="rounded-lg me-3" @click="openForm('query')" text="查詢" />
+      <v-btn color="success" prepend-icon="mdi-export" class="rounded-lg me-3" @exportExcel="" text="匯出Excel" />
     </template>
     <template #formDialog>
       <v-dialog v-model="toggleVal" max-width="600px" persistent>
         <v-card class="rounded-xl">
           <!-- 內部使用 DataForm 元件 -->
-          <base-data-form
-            :mode="formMode"
-            :formData="formData"
-            @submit="handleFormSubmit"
-            @cancel="closeForm"
-          >
+          <base-data-form :mode="formMode" :formData="formData" @submit="handleFormSubmit" @cancel="closeForm">
             <v-container fluid>
               <v-row>
                 <v-col>
-                  <v-text-field
-                    v-model="formData.code"
-                    label="代號"
-                    required
-                    :disabled="formMode === 'edit'"
-                    :rules="[required, maxLength(10), isAlphaNumeric]"
-                    variant="outlined"
-                    density="comfortable"
-                    class="mb-3"
-                  />
+                  <v-text-field v-model="formData.code" label="代號" required :disabled="formMode === 'edit'"
+                    :rules="[required, maxLength(10), isAlphaNumeric]" variant="outlined" density="comfortable"
+                    class="mb-3" />
                 </v-col>
                 <v-col>
-                  <v-text-field
-                    v-model="formData.name"
-                    label="名稱"
-                    required
-                    :rules="[required, maxLength(20)]"
-                    variant="outlined"
-                    density="comfortable"
-                    class="mb-3"
-                  />
+                  <v-text-field v-model="formData.name" label="名稱" required :rules="[required, maxLength(20)]"
+                    variant="outlined" density="comfortable" class="mb-3" />
                 </v-col>
               </v-row>
               <v-row>
                 <v-col>
-                  <v-text-field
-                    v-model="formData.contactName"
-                    label="聯絡人"
-                    :rules="[maxLength(20)]"
-                    variant="outlined"
-                    density="comfortable"
-                    class="mb-3"
-                  />
+                  <v-text-field v-model="formData.contactName" label="聯絡人" :rules="[maxLength(20)]" variant="outlined"
+                    density="comfortable" class="mb-3" />
                 </v-col>
                 <v-col>
-                  <v-text-field
-                    v-model="formData.contactPhone"
-                    label="聯絡方式"
-                    :rules="[maxLength(20)]"
-                    variant="outlined"
-                    density="comfortable"
-                    class="mb-3"
-                  />
+                  <v-text-field v-model="formData.contactPhone" label="聯絡方式" :rules="[maxLength(20)]" variant="outlined"
+                    density="comfortable" class="mb-3" />
                 </v-col>
               </v-row>
               <v-row>
                 <v-col>
-                  <v-text-field
-                    v-model="formData.address"
-                    label="地址"
-                    :rules="[maxLength(255)]"
-                    variant="outlined"
-                    density="comfortable"
-                    class="mb-3"
-                  />
+                  <v-text-field v-model="formData.address" label="地址" :rules="[maxLength(255)]" variant="outlined"
+                    density="comfortable" class="mb-3" />
                 </v-col>
                 <v-col>
-                  <v-radio-group
-                    v-model="formData.isActive"
-                    label="狀態"
-                    class="mb-3"
-                    inline
-                  >
+                  <v-radio-group v-model="formData.isActive" label="狀態" class="mb-3" inline>
+                    <v-radio v-if="formMode === 'query'" label="全部" :value="null" />
                     <v-radio label="啟用" :value="true" />
                     <v-radio label="停用" :value="false" />
                   </v-radio-group>
@@ -106,26 +47,12 @@
               </v-row>
               <v-row>
                 <v-col>
-                  <v-text-field
-                    v-model="formData.createAt"
-                    :disabled="formMode !== 'query'"
-                    type="datetime-local"
-                    label="建立時間"
-                    variant="outlined"
-                    density="comfortable"
-                    class="mb-3"
-                  />
+                  <v-text-field v-model="formData.createAt" :disabled="formMode !== 'query'" type="datetime-local"
+                    label="建立時間" variant="outlined" density="comfortable" class="mb-3" />
                 </v-col>
                 <v-col>
-                  <v-text-field
-                    v-model="formData.updateAt"
-                    :disabled="formMode !== 'query'"
-                    type="datetime-local"
-                    label="更新時間"
-                    variant="outlined"
-                    density="comfortable"
-                    class="mb-3"
-                  />
+                  <v-text-field v-model="formData.updateAt" :disabled="formMode !== 'query'" type="datetime-local"
+                    label="更新時間" variant="outlined" density="comfortable" class="mb-3" />
                 </v-col>
               </v-row>
             </v-container>
@@ -136,19 +63,14 @@
     <template #default>
       <!-- 3. 資料表格區 (Default Slot) -->
 
-      <base-data-table
-        :headers="headers"
-        :items="supplier"
-        :showActions="true"
-        @edit="handleEdit"
-        @delete="handleDelete"
-      />
+      <base-data-table :headers="headers" :items="supplier" :showActions="true" @edit="handleEdit"
+        @delete="handleDelete" />
     </template>
   </base-page>
 </template>
 
 <script lang="ts" setup>
-import type { FormMode } from "~/types/baseTypes";
+import type { FormMode, ResponseInterface } from "~/types/baseTypes";
 import type { SupplierForm, SupplierResponse } from "~/types/supplierTypes";
 
 definePageMeta({
@@ -167,48 +89,48 @@ const headers = [
   { title: "更新時間", key: "updatedAt", align: "end" },
 ];
 // 假資料
-const initSupplier: SupplierResponse[] = [
-  {
-    id: 1,
-    code: "MG",
-    name: "MyGirl",
-    contactName: "John Doe",
-    contactPhone: "123-456-7890",
-    address: "123 Main St",
-    isActive: true,
-    createAt: "",
-    updateAt: "",
-  },
-  {
-    id: 2,
-    code: "YK",
-    name: "優凱",
-    contactName: "Sam Smith",
-    contactPhone: "456-789-0123",
-    address: "456 Elm St",
-    isActive: true,
-    createAt: "",
-    updateAt: "",
-  },
-  {
-    id: 3,
-    code: "YG",
-    name: "優格",
-    contactName: "Kelly Johnson",
-    contactPhone: "789-012-3456",
-    address: "789 OakMain St",
-    isActive: true,
-    createAt: "",
-    updateAt: "",
-  },
-];
+// const initSupplier: SupplierResponse[] = [
+//   {
+//     id: 1,
+//     code: "MG",
+//     name: "MyGirl",
+//     contactName: "John Doe",
+//     contactPhone: "123-456-7890",
+//     address: "123 Main St",
+//     isActive: true,
+//     createAt: "",
+//     updateAt: "",
+//   },
+//   {
+//     id: 2,
+//     code: "YK",
+//     name: "優凱",
+//     contactName: "Sam Smith",
+//     contactPhone: "456-789-0123",
+//     address: "456 Elm St",
+//     isActive: true,
+//     createAt: "",
+//     updateAt: "",
+//   },
+//   {
+//     id: 3,
+//     code: "YG",
+//     name: "優格",
+//     contactName: "Kelly Johnson",
+//     contactPhone: "789-012-3456",
+//     address: "789 OakMain St",
+//     isActive: true,
+//     createAt: "",
+//     updateAt: "",
+//   },
+// ];
 
 const { required, maxLength, isAlphaNumeric } = useValidateRules();
 const { get, post, put, del } = useApiClient("/supplier");
-const supplier = reactive<SupplierResponse[]>(initSupplier);
+const supplier = reactive<SupplierResponse[]>([]);
 
 // 表單狀態管理
-const toggleVal = ref(false);
+const toggleVal = ref<boolean>(false);
 const formMode = ref<FormMode>("create");
 const formData = reactive<SupplierResponse>({
   id: 0,
@@ -271,10 +193,11 @@ const handleFormSubmit = ({
 };
 
 // 處理刪除事件
-const handleDelete = (item: SupplierResponse) => {};
+const handleDelete = (item: SupplierResponse) => { };
 
 onMounted(async () => {
-  const { header, body } = await get();
+  const { header, body } = await get<ResponseInterface>();
+  supplier.splice(0, supplier.length, ...body);
   console.log(header);
   console.log(body);
 });

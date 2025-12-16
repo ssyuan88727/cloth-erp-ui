@@ -1,25 +1,25 @@
-const apiBase = useRuntimeConfig().public.apiBase || "http://localhost:8080";
-
 export default (pageUrl: string) => {
-  const fullUrl = `${apiBase}${pageUrl}`;
+  const runTimeConfig = useRuntimeConfig(),
+    apiBase = runTimeConfig.public.apiBase || "http://localhost:8080",
+    fullUrl = `${apiBase}${pageUrl}`;
   return {
-    get: async <T>(params: Record<string, any> = {}) =>
-      await $fetch<T>(`${fullUrl}/select`, {
+    get: async <ResponseInterface>(params: Record<string, any> = {}) =>
+      await $fetch<ResponseInterface>(`${fullUrl}/select`, {
         method: "GET",
         params,
       }),
-    post: async <T>(body: Record<string, any> = {}) =>
-      await $fetch<T>(`${fullUrl}/insert`, {
+    post: async <ResponseInterface>(body: Record<string, any> = {}) =>
+      await $fetch<ResponseInterface>(`${fullUrl}/insert`, {
         method: "POST",
         body,
       }),
-    put: async <T>(body: Record<string, any> = {}) =>
-      await $fetch<T>(`${fullUrl}/update`, {
+    put: async <ResponseInterface>(body: Record<string, any> = {}) =>
+      await $fetch<ResponseInterface>(`${fullUrl}/update`, {
         method: "PUT",
         body,
       }),
-    del: async <T>(id: number) =>
-      await $fetch<T>(`${fullUrl}/delete/${id}`, {
+    del: async <ResponseInterface>(id: number) =>
+      await $fetch<ResponseInterface>(`${fullUrl}/delete/${id}`, {
         method: "DELETE",
       }),
   };
