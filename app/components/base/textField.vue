@@ -1,43 +1,24 @@
 <template>
   <v-text-field
-    v-model="internalValue"
+    v-model="model"
     :label="label"
-    :variant="variant"
-    :density="density"
-    :class="classAtr"
+    :rules="rules"
+    variant="outlined"
+    density="compact"
+    hide-details="auto"
+    clearable
+    class="mb-2"
     v-bind="$attrs"
   />
 </template>
 
 <script setup lang="ts">
-const {
-  modelValue = "",
-  label = "",
-  variant = "outlined",
-  density = "comfortable",
-  classAtr = "mb-3",
-} = defineProps<{
-  modelValue?: string | number | null;
+const model = defineModel<string | number>();
+
+interface Props {
   label?: string;
-  variant?:
-    | "filled"
-    | "outlined"
-    | "plain"
-    | "solo"
-    | "solo-filled"
-    | "solo-inverted"
-    | "underlined"
-    | undefined;
-  density?: "default" | "comfortable" | "compact";
-  classAtr?: string;
-}>();
+  rules?: any[];
+}
 
-const emit = defineEmits(["update:modelValue"]);
-
-const internalValue = computed({
-  get: () => modelValue,
-  set: (newValue) => {
-    emit("update:modelValue", newValue);
-  },
-});
+defineProps<Props>();
 </script>

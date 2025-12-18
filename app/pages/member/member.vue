@@ -55,6 +55,7 @@
                   <base-text-field
                     v-model="formData.email"
                     label="電子郵件"
+                    type="email"
                     :rules="[isEmail, maxLength(100)]"
                   />
                 </v-col>
@@ -102,7 +103,7 @@
                       label="全部"
                       :value="null"
                     />
-                    <v-radio label="正常" :value="true" />
+                    <v-radio label="一般" :value="true" />
                     <v-radio label="封鎖" :value="false" />
                   </v-radio-group>
                 </v-col>
@@ -163,13 +164,15 @@
       <base-data-table
         :headers="headers"
         :items="listData"
-        :showActions="true"
+        expandable
+        deletable
+        editable
         @edit="edit"
         @remove="remove"
       >
         <template #item.isActive="{ value }">
           <v-chip :color="value ? 'success' : 'error'" size="small" label>
-            {{ value ? "啟用" : "停用" }}
+            {{ value ? "一般" : "封鎖" }}
           </v-chip>
         </template>
       </base-data-table>
@@ -186,16 +189,15 @@ definePageMeta({
 });
 
 const headers = [
-  { title: "操作", key: "actions" },
   { title: "代號", key: "code" },
   { title: "名稱", key: "name" },
-  { title: "電話", key: "phone" },
-  { title: "電子郵件", key: "email" },
-  { title: "地址", key: "address" },
+  { title: "電話", key: "phone", removable: true },
+  { title: "電子郵件", key: "email", removable: true },
+  { title: "地址", key: "address", removable: true },
   { title: "加入日期", key: "joinDate" },
-  { title: "總銷售數量", key: "totQty" },
-  { title: "總銷售金額", key: "totAmt" },
-  { title: "總銷售次數", key: "totCnt" },
+  { title: "總購買件數", key: "totQty" },
+  { title: "總消費金額", key: "totAmt" },
+  { title: "總消費次數", key: "totCnt" },
   { title: "狀態", key: "isActive" },
   { title: "建立時間", key: "createAt" },
   { title: "更新時間", key: "updateAt" },

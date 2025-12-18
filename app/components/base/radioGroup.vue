@@ -1,26 +1,36 @@
 <template>
   <v-radio-group
-    v-model="internalValue"
+    v-model="model"
     :label="label"
-    class="mb-3"
+    :inline="inline"
+    hide-details="auto"
     v-bind="$attrs"
   >
-    <slot />
+    <v-radio
+      v-for="opt in options"
+      :key="opt.value"
+      :label="opt.label"
+      :value="opt.value"
+      color="primary"
+    />
   </v-radio-group>
 </template>
 
-<script lang="ts" setup>
-const { modelValue = "", label = "" } = defineProps<{
-  modelValue?: string | number | boolean | null;
+<script setup lang="ts">
+const model = defineModel<any>();
+
+interface Option {
+  label: string;
+  value: any;
+}
+
+interface Props {
   label?: string;
-}>();
+  options: Option[];
+  inline?: boolean;
+}
 
-const emit = defineEmits(["update:modelValue"]);
-
-const internalValue = computed({
-  get: () => modelValue,
-  set: (newValue) => {
-    emit("update:modelValue", newValue);
-  },
+withDefaults(defineProps<Props>(), {
+  inline: true
 });
 </script>

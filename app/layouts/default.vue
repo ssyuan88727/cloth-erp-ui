@@ -85,6 +85,10 @@ const menuItems = computed(() => {
           title = "會員";
           icon = "mdi-account";
           break;
+        case "store":
+          title = "店鋪";
+          icon = "mdi-store";
+          break;
         default:
           title = parent.toUpperCase();
           icon = "mdi-folder";

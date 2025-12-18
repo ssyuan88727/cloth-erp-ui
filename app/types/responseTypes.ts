@@ -42,3 +42,24 @@ export interface MemberInterface {
   updateAtS: string;
   updateAtE: string;
 }
+
+export interface StoreTypeInterface {
+  id: number;
+  name: string;
+}
+
+export interface StoreInterface {
+  id: number;
+  code: string;
+  name: string;
+  storeType: StoreTypeInterface;
+  storeTypeId: number | number[];
+  isActive: boolean;
+  createAt: string;
+  updateAt: string;
+  // query
+  createAtS: string;
+  createAtE: string;
+  updateAtS: string;
+  updateAtE: string;
+}

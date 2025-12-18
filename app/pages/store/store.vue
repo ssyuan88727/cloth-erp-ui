@@ -1,6 +1,5 @@
 <template>
-  <base-page page-title="供應商管理">
-    <!-- 功能按鈕區 -->
+  <base-page page-title="店鋪管理">
     <template #actions>
       <base-btn
         text="新增"
@@ -31,51 +30,32 @@
                   <base-text-field
                     v-model="formData.code"
                     label="代號"
-                    required
                     :disabled="formMode === 'edit'"
-                    :rules="[required, maxLength(10), isAlphaNumeric]"
+                    :rules="[required, maxLength(10)]"
                   />
                 </v-col>
                 <v-col>
                   <base-text-field
                     v-model="formData.name"
                     label="名稱"
-                    required
                     :rules="[required, maxLength(20)]"
                   />
                 </v-col>
               </v-row>
               <v-row>
                 <v-col>
-                  <base-text-field
-                    v-model="formData.contactName"
-                    label="聯絡人"
-                    :rules="[maxLength(20)]"
+                  <base-autocomplete
+                    v-model="formData.storeTypeId"
+                    label="店鋪類別"
+                    :rules="[required]"
+                    :items="storeTypes"
+                    :multiple="formMode === 'query'"
+                    item-title="name"
+                    item-value="id"
                   />
                 </v-col>
                 <v-col>
-                  <base-text-field
-                    v-model="formData.contactPhone"
-                    label="聯絡方式"
-                    :rules="[isNumber, maxLength(20)]"
-                  />
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col>
-                  <base-text-field
-                    v-model="formData.address"
-                    label="地址"
-                    :rules="[maxLength(255)]"
-                  />
-                </v-col>
-                <v-col>
-                  <base-radio-group
-                    v-model="formData.isActive"
-                    label="狀態"
-                    class="mb-3"
-                    inline
-                  >
+                  <base-radio-group v-model="formData.isActive" label="狀態">
                     <v-radio
                       v-if="formMode === 'query'"
                       label="全部"
@@ -91,20 +71,16 @@
                   <base-date-picker
                     v-if="formMode !== 'query'"
                     v-model="formData.createAt"
-                    type="datetime-local"
-                    disabled
                     label="建立時間"
+                    disabled
                   />
-                  <v-row v-if="formMode === 'query'">
+                  <v-row v-else>
                     <v-col>
                       <base-date-picker
                         v-model="formData.createAtS"
                         label="建立時間(起)"
                       />
                     </v-col>
-                    <v-vol cols="1">
-                      
-                    </v-vol>
                     <v-col>
                       <base-date-picker
                         v-model="formData.createAtE"
@@ -117,11 +93,10 @@
                   <base-date-picker
                     v-if="formMode !== 'query'"
                     v-model="formData.updateAt"
-                    disabled
-                    type="datetime-local"
                     label="更新時間"
+                    disabled
                   />
-                   <v-row v-if="formMode === 'query'">
+                  <v-row v-else>
                     <v-col>
                       <base-date-picker
                         v-model="formData.updateAtS"
@@ -152,6 +127,9 @@
         @edit="edit"
         @remove="remove"
       >
+        <template #item.storeType="{ value }">
+          {{ value.name }}
+        </template>
         <template #item.isActive="{ value }">
           <v-chip :color="value ? 'success' : 'error'" size="small" label>
             {{ value ? "啟用" : "停用" }}
@@ -164,38 +142,36 @@
 
 <script lang="ts" setup>
 import type { FormMode, ResponseInterface } from "~/types/baseTypes";
-import type { SupplierInterface } from "~/types/responseTypes";
+import type { StoreInterface, StoreTypeInterface } from "~/types/responseTypes";
 
 definePageMeta({
-  name: "供應商管理",
+  name: "店鋪管理",
 });
 
-// 表格欄位設定 (動態欄位)
 const headers = [
   { title: "代號", key: "code" },
   { title: "名稱", key: "name" },
-  { title: "聯絡人", key: "contactName" },
-  { title: "聯絡方式", key: "contactPhone" },
-  { title: "地址", key: "address" },
+  { title: "店鋪類別", key: "storeType" },
   { title: "狀態", key: "isActive" },
   { title: "建立時間", key: "createAt" },
   { title: "更新時間", key: "updateAt" },
 ];
-
-const { required, maxLength, isNumber, isAlphaNumeric } = useValidateRules();
-const { submit, get, del } = useApiClient("/supplier");
-const listData = reactive<SupplierInterface[]>([]);
+const { required, maxLength } = useValidateRules();
+const { submit, get, del } = useApiClient("/store");
+const listData = reactive<StoreInterface[]>([]);
 
 // 表單狀態管理
 const toggleVal = ref<boolean>(false);
 const formMode = ref<FormMode>("create");
-const formData = reactive<SupplierInterface>({
+const formData = reactive<StoreInterface>({
   id: 0,
   code: "",
   name: "",
-  contactName: "",
-  contactPhone: "",
-  address: "",
+  storeType: {
+    id: 0,
+    name: "",
+  },
+  storeTypeId: 0,
   isActive: true,
   createAt: "",
   updateAt: "",
@@ -209,9 +185,11 @@ const defaultForm = {
   id: 0,
   code: "",
   name: "",
-  contactName: "",
-  contactPhone: "",
-  address: "",
+  storeType: {
+    id: 0,
+    name: "",
+  },
+  storeTypeId: 0,
   isActive: true,
   createAt: "",
   updateAt: "",
@@ -221,17 +199,22 @@ const defaultForm = {
   updateAtS: "",
   updateAtE: "",
 };
+const storeTypes = reactive<StoreTypeInterface[]>([]);
 
 const fetchData = async () => {
-  const { body } = await get<ResponseInterface>();
-  listData.splice(0, listData.length, ...body);
+  const response = await get<ResponseInterface | StoreInterface[]>();
+  const items = Array.isArray(response) ? response : response?.body;
+  if (Array.isArray(items)) {
+    listData.splice(0, listData.length, ...items);
+    console.log(listData);
+  }
 };
 
-const edit = (item: SupplierInterface) => {
+const edit = (item: StoreInterface) => {
   openForm("edit", item);
 };
 
-const openForm = (mode: FormMode, item: SupplierInterface = defaultForm) => {
+const openForm = (mode: FormMode, item: StoreInterface = defaultForm) => {
   formMode.value = mode;
   // 複製一份資料給表單，確保不會直接修改表格資料
   Object.assign(formData, { ...item });
@@ -250,13 +233,18 @@ const handleFormSubmit = async ({
   data,
 }: {
   mode: FormMode;
-  data: SupplierInterface;
+  data: StoreInterface;
 }) => {
   try {
-    const { body } = await submit(mode, data);
+    console.log(data);
+    debugger;
+    const response = await submit(mode, data);
     // 如果是查詢，直接更新列表；如果是新增/修改，建議重新獲取全部資料
     if (mode === "query") {
-      listData.splice(0, listData.length, ...body);
+      const items = Array.isArray(response) ? response : response?.body;
+      if (Array.isArray(items)) {
+        listData.splice(0, listData.length, ...items);
+      }
     } else {
       await fetchData(); // 封裝後的重整函數
     }
@@ -280,5 +268,12 @@ const remove = async (id: number) => {
 
 onMounted(async () => {
   await fetchData();
+
+  const { get: getStoreTypes } = useApiClient("/store-type");
+  const res = await getStoreTypes<ResponseInterface | StoreTypeInterface[]>();
+  const items = Array.isArray(res) ? res : res?.body;
+  if (Array.isArray(items)) {
+    storeTypes.splice(0, storeTypes.length, ...items);
+  }
 });
 </script>

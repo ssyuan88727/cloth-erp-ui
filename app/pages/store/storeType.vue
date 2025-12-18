@@ -1,5 +1,5 @@
 <template>
-  <base-page page-title="退回原因">
+  <base-page page-title="店鋪類別管理">
     <template #actions>
       <base-btn
         text="新增"
@@ -28,9 +28,9 @@
               <v-row>
                 <v-col cols="6">
                   <base-text-field
-                    v-model="formData.reason"
-                    label="原因"
-                    required
+                    v-model="formData.name"
+                    label="名稱"
+                    :disabled="formMode === 'edit'"
                     :rules="[required, maxLength(20)]"
                   />
                 </v-col>
@@ -47,7 +47,7 @@
         :items="listData"
         deletable
         editable
-        @edit="editHandler"
+        @edit="edit"
         @remove="remove"
       />
     </template>
@@ -56,39 +56,42 @@
 
 <script lang="ts" setup>
 import type { FormMode, ResponseInterface } from "~/types/baseTypes";
-import type { ReturnReasonInterface } from "~/types/responseTypes";
+import type { StoreTypeInterface } from "~/types/responseTypes";
 
 definePageMeta({
-  name: "退回原因",
+  name: "店鋪類別管理",
 });
 
-const headers = [{ title: "原因", key: "reason", align: "center" }];
+const headers = [{ title: "名稱", key: "name" }];
 const { required, maxLength } = useValidateRules();
-const { submit, get, del } = useApiClient("/return-reason");
-const listData = reactive<ReturnReasonInterface[]>([]);
+const { submit, get, del } = useApiClient("/store-type");
+const listData = reactive<StoreTypeInterface[]>([]);
 
 // 表單狀態管理
 const toggleVal = ref<boolean>(false);
 const formMode = ref<FormMode>("create");
-const formData = reactive<ReturnReasonInterface>({
+const formData = reactive<StoreTypeInterface>({
   id: 0,
-  reason: "",
+  name: "",
 });
 const defaultForm = {
   id: 0,
-  reason: "",
+  name: "",
 };
 
 const fetchData = async () => {
-  const { body } = await get<ResponseInterface>();
-  listData.splice(0, listData.length, ...body);
+  const response = await get<ResponseInterface | StoreTypeInterface[]>();
+  const items = Array.isArray(response) ? response : response?.body;
+  if (Array.isArray(items)) {
+    listData.splice(0, listData.length, ...items);
+  }
 };
 
-const editHandler = (item: ReturnReasonInterface) => {
+const edit = (item: StoreTypeInterface) => {
   openForm("edit", item);
 };
 
-const openForm = (mode: FormMode, item: ReturnReasonInterface = defaultForm) => {
+const openForm = (mode: FormMode, item: StoreTypeInterface = defaultForm) => {
   formMode.value = mode;
   // 複製一份資料給表單，確保不會直接修改表格資料
   Object.assign(formData, { ...item });
@@ -107,13 +110,16 @@ const handleFormSubmit = async ({
   data,
 }: {
   mode: FormMode;
-  data: ReturnReasonInterface;
+  data: StoreTypeInterface;
 }) => {
   try {
-    const { body } = await submit(mode, data);
+    const response = await submit(mode, data);
     // 如果是查詢，直接更新列表；如果是新增/修改，建議重新獲取全部資料
     if (mode === "query") {
-      listData.splice(0, listData.length, ...body);
+      const items = Array.isArray(response) ? response : response?.body;
+      if (Array.isArray(items)) {
+        listData.splice(0, listData.length, ...items);
+      }
     } else {
       await fetchData(); // 封裝後的重整函數
     }
