@@ -21,7 +21,7 @@
         type="submit"
         color="primary"
         class="rounded-lg font-weight-bold"
-        :text="formTitle"
+        :text="formSubmitText"
       />
     </v-card-actions>
   </v-form>
@@ -37,7 +37,7 @@ const { mode = "create", formData } = defineProps<{
 const emit = defineEmits(["submit", "cancel"]);
 
 // 內部 state 避免直接修改 prop
-const formRef = ref(null); // Vuetify form ref
+const formRef = ref<any>(null); // Vuetify form ref
 const formTitle = computed<string>(() => {
   switch (mode) {
     case "edit":
@@ -48,11 +48,16 @@ const formTitle = computed<string>(() => {
       return "新增";
   }
 });
+const formSubmitText = computed<string>(() =>
+  mode === "query" ? "查詢" : "儲存"
+);
 
 const submitForm = async () => {
-  if (formRef.value) {
-    emit("submit", { formData, mode });
+  if (mode !== "query") {
+    const { valid } = await formRef.value.validate();
+    if (!valid) return;
   }
+  emit("submit", { mode, data: formData });
 };
 const closeForm = () => {
   emit("cancel");

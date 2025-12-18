@@ -1,6 +1,5 @@
 <template>
-  <base-page page-title="供應商管理">
-    <!-- 功能按鈕區 -->
+  <base-page page-title="會員管理">
     <template #actions>
       <base-btn
         text="新增"
@@ -31,33 +30,32 @@
                   <base-text-field
                     v-model="formData.code"
                     label="代號"
-                    required
                     :disabled="formMode === 'edit'"
-                    :rules="[required, maxLength(10), isAlphaNumeric]"
+                    :rules="[required, maxLength(20)]"
                   />
                 </v-col>
                 <v-col>
                   <base-text-field
                     v-model="formData.name"
                     label="名稱"
-                    required
-                    :rules="[required, maxLength(20)]"
+                    :disabled="formMode === 'edit'"
+                    :rules="[required, maxLength(50)]"
                   />
                 </v-col>
               </v-row>
               <v-row>
                 <v-col>
                   <base-text-field
-                    v-model="formData.contactName"
-                    label="聯絡人"
-                    :rules="[maxLength(20)]"
+                    v-model="formData.phone"
+                    label="電話"
+                    :rules="[isNumber, maxLength(20)]"
                   />
                 </v-col>
                 <v-col>
                   <base-text-field
-                    v-model="formData.contactPhone"
-                    label="聯絡方式"
-                    :rules="[isNumber, maxLength(20)]"
+                    v-model="formData.email"
+                    label="電子郵件"
+                    :rules="[isEmail, maxLength(100)]"
                   />
                 </v-col>
               </v-row>
@@ -70,10 +68,33 @@
                   />
                 </v-col>
                 <v-col>
-                  <base-radio-group
+                  <base-date-picker
+                    v-if="formMode !== 'query'"
+                    v-model="formData.joinDate"
+                    label="加入日期"
+                    :disabled="formMode === 'edit'"
+                  />
+                  <v-row v-else>
+                    <v-col>
+                      <base-date-picker
+                        v-model="formData.joinDateS"
+                        label="加入日期(起)"
+                      />
+                    </v-col>
+                    <v-col>
+                      <base-date-picker
+                        v-model="formData.joinDateE"
+                        label="加入日期(迄)"
+                      />
+                    </v-col>
+                  </v-row>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col>
+                  <v-radio-group
                     v-model="formData.isActive"
                     label="狀態"
-                    class="mb-3"
                     inline
                   >
                     <v-radio
@@ -81,30 +102,24 @@
                       label="全部"
                       :value="null"
                     />
-                    <v-radio label="啟用" :value="true" />
-                    <v-radio label="停用" :value="false" />
-                  </base-radio-group>
+                    <v-radio label="正常" :value="true" />
+                    <v-radio label="封鎖" :value="false" />
+                  </v-radio-group>
                 </v-col>
-              </v-row>
-              <v-row>
                 <v-col>
                   <base-date-picker
                     v-if="formMode !== 'query'"
                     v-model="formData.createAt"
-                    type="datetime-local"
-                    disabled
                     label="建立時間"
+                    disabled
                   />
-                  <v-row v-if="formMode === 'query'">
+                  <v-row v-else>
                     <v-col>
                       <base-date-picker
                         v-model="formData.createAtS"
                         label="建立時間(起)"
                       />
                     </v-col>
-                    <v-vol cols="1">
-                      
-                    </v-vol>
                     <v-col>
                       <base-date-picker
                         v-model="formData.createAtE"
@@ -113,15 +128,16 @@
                     </v-col>
                   </v-row>
                 </v-col>
-                <v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="6">
                   <base-date-picker
                     v-if="formMode !== 'query'"
                     v-model="formData.updateAt"
-                    disabled
-                    type="datetime-local"
                     label="更新時間"
+                    disabled
                   />
-                   <v-row v-if="formMode === 'query'">
+                  <v-row v-else>
                     <v-col>
                       <base-date-picker
                         v-model="formData.updateAtS"
@@ -163,42 +179,51 @@
 
 <script lang="ts" setup>
 import type { FormMode, ResponseInterface } from "~/types/baseTypes";
-import type { SupplierInterface } from "~/types/responseTypes";
+import type { MemberInterface } from "~/types/responseTypes";
 
 definePageMeta({
-  name: "供應商管理",
+  name: "會員管理",
 });
 
-// 表格欄位設定 (動態欄位)
 const headers = [
+  { title: "操作", key: "actions" },
   { title: "代號", key: "code" },
   { title: "名稱", key: "name" },
-  { title: "聯絡人", key: "contactName" },
-  { title: "聯絡方式", key: "contactPhone" },
+  { title: "電話", key: "phone" },
+  { title: "電子郵件", key: "email" },
   { title: "地址", key: "address" },
+  { title: "加入日期", key: "joinDate" },
+  { title: "總銷售數量", key: "totQty" },
+  { title: "總銷售金額", key: "totAmt" },
+  { title: "總銷售次數", key: "totCnt" },
   { title: "狀態", key: "isActive" },
   { title: "建立時間", key: "createAt" },
   { title: "更新時間", key: "updateAt" },
 ];
-
-const { required, maxLength, isNumber, isAlphaNumeric } = useValidateRules();
-const { submit, get, del } = useApiClient("/supplier");
-const listData = reactive<SupplierInterface[]>([]);
+const { required, maxLength, isNumber, isEmail } = useValidateRules();
+const { submit, get, del } = useApiClient("/member");
+const listData = reactive<MemberInterface[]>([]);
 
 // 表單狀態管理
 const toggleVal = ref<boolean>(false);
 const formMode = ref<FormMode>("create");
-const formData = reactive<SupplierInterface>({
+const formData = reactive<MemberInterface>({
   id: 0,
   code: "",
   name: "",
-  contactName: "",
-  contactPhone: "",
+  phone: "",
+  email: "",
   address: "",
+  joinDate: "",
+  totQty: 0,
+  totAmt: 0,
+  totCnt: 0,
   isActive: true,
   createAt: "",
   updateAt: "",
   // query
+  joinDateS: "",
+  joinDateE: "",
   createAtS: "",
   createAtE: "",
   updateAtS: "",
@@ -208,13 +233,19 @@ const defaultForm = {
   id: 0,
   code: "",
   name: "",
-  contactName: "",
-  contactPhone: "",
+  phone: "",
+  email: "",
   address: "",
+  joinDate: "",
+  totQty: 0,
+  totAmt: 0,
+  totCnt: 0,
   isActive: true,
   createAt: "",
   updateAt: "",
   // query
+  joinDateS: "",
+  joinDateE: "",
   createAtS: "",
   createAtE: "",
   updateAtS: "",
@@ -222,15 +253,18 @@ const defaultForm = {
 };
 
 const fetchData = async () => {
-  const { body } = await get<ResponseInterface>();
-  listData.splice(0, listData.length, ...body);
+  const response = await get<ResponseInterface | MemberInterface[]>();
+  const items = Array.isArray(response) ? response : response?.body;
+  if (Array.isArray(items)) {
+    listData.splice(0, listData.length, ...items);
+  }
 };
 
-const edit = (item: SupplierInterface) => {
+const edit = (item: MemberInterface) => {
   openForm("edit", item);
 };
 
-const openForm = (mode: FormMode, item: SupplierInterface = defaultForm) => {
+const openForm = (mode: FormMode, item: MemberInterface = defaultForm) => {
   formMode.value = mode;
   // 複製一份資料給表單，確保不會直接修改表格資料
   Object.assign(formData, { ...item });
@@ -249,13 +283,16 @@ const handleFormSubmit = async ({
   data,
 }: {
   mode: FormMode;
-  data: SupplierInterface;
+  data: MemberInterface;
 }) => {
   try {
-    const { body } = await submit(mode, data);
+    const response = await submit(mode, data);
     // 如果是查詢，直接更新列表；如果是新增/修改，建議重新獲取全部資料
     if (mode === "query") {
-      listData.splice(0, listData.length, ...body);
+      const items = Array.isArray(response) ? response : response?.body;
+      if (Array.isArray(items)) {
+        listData.splice(0, listData.length, ...items);
+      }
     } else {
       await fetchData(); // 封裝後的重整函數
     }
