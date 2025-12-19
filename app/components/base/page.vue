@@ -1,21 +1,46 @@
 <template>
-  <!-- 頁面標題區 -->
-  <v-card-title class="text-h5 font-weight-bold py-4 px-6 text-indigo-darken-2">
-    {{ pageTitle }}
-  </v-card-title>
-  <v-divider />
-  <!-- 功能按鈕區 -->
-  <div class="flex align-center mb-6 px-6">
-    <slot name="actions" />
-  </div>
-  <!-- 表單區 -->
-  <slot name="formDialog" />
-  <!-- 資料表格區 / 主要內容區 -->
-  <v-card-text class="pa-4">
-    <slot />
-  </v-card-text>
+  <v-container fluid class="pa-6">
+    <header class="d-flex align-center mb-6">
+      <div>
+        <h1 class="text-h5 font-weight-bold color-primary">
+          <slot name="title">{{ title }}</slot>
+        </h1>
+        <v-breadcrumbs
+          v-if="breadcrumbs.length"
+          :items="breadcrumbs"
+          class="pa-0 mt-1"
+        />
+      </div>
+
+      <v-spacer />
+
+      <div class="d-flex gap-2">
+        <slot name="actions" />
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+  </v-container>
 </template>
 
-<script lang="ts" setup>
-const { pageTitle } = defineProps<{ pageTitle: string }>();
+<script setup lang="ts">
+interface Props {
+  title?: string;
+  breadcrumbs?: any[];
+}
+
+withDefaults(defineProps<Props>(), {
+  title: "",
+  breadcrumbs: () => [],
+});
 </script>
+
+<style scoped>
+/* 統一 ERP 頁面背景或特定過渡效果 */
+.v-container {
+  min-height: calc(100vh - 64px); /* 扣除 AppBar 高度 */
+  background-color: #f5f7fa; /* 輕微的灰色背景增加層次感 */
+}
+</style>

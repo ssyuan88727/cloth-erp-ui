@@ -14,139 +14,126 @@
         @click="openForm('query')"
       />
     </template>
-    <template #formDialog>
-      <v-dialog v-model="toggleVal" max-width="600px" persistent>
-        <v-card class="rounded-xl">
-          <!-- 內部使用 DataForm 元件 -->
-          <base-data-form
-            :mode="formMode"
-            :formData="formData"
-            @submit="handleFormSubmit"
-            @cancel="closeForm"
-          >
-            <v-container fluid>
-              <v-row>
-                <v-col>
-                  <base-text-field
-                    v-model="formData.code"
-                    label="代號"
-                    :disabled="formMode === 'edit'"
-                    :rules="[required, maxLength(10)]"
-                  />
-                </v-col>
-                <v-col>
-                  <base-text-field
-                    v-model="formData.name"
-                    label="名稱"
-                    :rules="[required, maxLength(20)]"
-                  />
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col>
-                  <base-autocomplete
-                    v-model="formData.storeTypeId"
-                    label="店鋪類別"
-                    :rules="[required]"
-                    :items="storeTypes"
-                    :multiple="formMode === 'query'"
-                    item-title="name"
-                    item-value="id"
-                  />
-                </v-col>
-                <v-col>
-                  <base-radio-group v-model="formData.isActive" label="狀態">
-                    <v-radio
-                      v-if="formMode === 'query'"
-                      label="全部"
-                      :value="null"
-                    />
-                    <v-radio label="啟用" :value="true" />
-                    <v-radio label="停用" :value="false" />
-                  </base-radio-group>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col>
-                  <base-date-picker
-                    v-if="formMode !== 'query'"
-                    v-model="formData.createAt"
-                    label="建立時間"
-                    disabled
-                  />
-                  <v-row v-else>
-                    <v-col>
-                      <base-date-picker
-                        v-model="formData.createAtS"
-                        label="建立時間(起)"
-                      />
-                    </v-col>
-                    <v-col>
-                      <base-date-picker
-                        v-model="formData.createAtE"
-                        label="建立時間(迄)"
-                      />
-                    </v-col>
-                  </v-row>
-                </v-col>
-                <v-col>
-                  <base-date-picker
-                    v-if="formMode !== 'query'"
-                    v-model="formData.updateAt"
-                    label="更新時間"
-                    disabled
-                  />
-                  <v-row v-else>
-                    <v-col>
-                      <base-date-picker
-                        v-model="formData.updateAtS"
-                        label="更新時間(起)"
-                      />
-                    </v-col>
-                    <v-col>
-                      <base-date-picker
-                        v-model="formData.updateAtE"
-                        label="更新時間(迄)"
-                      />
-                    </v-col>
-                  </v-row>
-                </v-col>
-              </v-row>
-            </v-container>
-          </base-data-form>
-        </v-card>
-      </v-dialog>
-    </template>
-    <template #default>
-      <!-- 3. 資料表格區 (Default Slot) -->
-      <base-data-table
-        :headers="headers"
-        :items="listData"
-        deletable
-        editable
-        @edit="edit"
-        @remove="remove"
-      >
-        <template #item.storeType="{ value }">
-          {{ value.name }}
-        </template>
-        <template #item.isActive="{ value }">
-          <v-chip :color="value ? 'success' : 'error'" size="small" label>
-            {{ value ? "啟用" : "停用" }}
-          </v-chip>
-        </template>
-      </base-data-table>
-    </template>
+    <base-data-form
+      v-model="toggleVal"
+      :mode="formMode"
+      :formData="formData"
+      @submit="handleFormSubmit"
+      @cancel="closeForm"
+    >
+      <v-container fluid>
+        <v-row>
+          <v-col>
+            <base-text-field
+              v-model="formData.code"
+              label="代號"
+              :disabled="formMode === 'edit'"
+              :rules="[required, maxLength(10)]"
+            />
+          </v-col>
+          <v-col>
+            <base-text-field
+              v-model="formData.name"
+              label="名稱"
+              :rules="[required, maxLength(20)]"
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <base-autocomplete
+              v-model="formData.storeTypeId"
+              label="店鋪類別"
+              :rules="[required]"
+              :items="storeTypes"
+              :multiple="formMode === 'query'"
+              item-title="name"
+              item-value="id"
+            />
+          </v-col>
+          <v-col>
+            <base-radio-group
+              v-model="formData.isActive"
+              label="狀態"
+              :options="activeOptions"
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <base-date-picker
+              v-if="formMode !== 'query'"
+              v-model="formData.createAt"
+              label="建立時間"
+              disabled
+            />
+            <v-row v-else>
+              <v-col>
+                <base-date-picker
+                  v-model="formData.createAtS"
+                  label="建立時間(起)"
+                />
+              </v-col>
+              <v-col>
+                <base-date-picker
+                  v-model="formData.createAtE"
+                  label="建立時間(迄)"
+                />
+              </v-col>
+            </v-row>
+          </v-col>
+          <v-col>
+            <base-date-picker
+              v-if="formMode !== 'query'"
+              v-model="formData.updateAt"
+              label="更新時間"
+              disabled
+            />
+            <v-row v-else>
+              <v-col>
+                <base-date-picker
+                  v-model="formData.updateAtS"
+                  label="更新時間(起)"
+                />
+              </v-col>
+              <v-col>
+                <base-date-picker
+                  v-model="formData.updateAtE"
+                  label="更新時間(迄)"
+                />
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+      </v-container>
+    </base-data-form>
+    <base-data-table
+      :headers="headers"
+      :items="listData"
+      deletable
+      editable
+      @edit="edit"
+      @remove="remove"
+    >
+      <template #item.storeType="{ value }">
+        {{ value.name }}
+      </template>
+      <template #item.isActive="{ value }">
+        <v-chip :color="value ? 'success' : 'error'" size="small" label>
+          {{ value ? "啟用" : "停用" }}
+        </v-chip>
+      </template>
+    </base-data-table>
   </base-page>
 </template>
 
 <script lang="ts" setup>
-import type { FormMode, ResponseInterface } from "~/types/baseTypes";
+import type {
+  FormMode,
+  RadioOption,
+  ResponseInterface,
+} from "~/types/baseTypes";
 import type { StoreInterface, StoreTypeInterface } from "~/types/responseTypes";
-
-definePageMeta({
-  name: "店鋪管理",
-});
 
 const headers = [
   { title: "代號", key: "code" },
@@ -158,7 +145,19 @@ const headers = [
 ];
 const { required, maxLength } = useValidateRules();
 const { submit, get, del } = useApiClient("/store");
+const { get: getStoreType } = useApiClient("/store-type");
+const { success, error, confirm } = useAlert();
 const listData = reactive<StoreInterface[]>([]);
+const activeOptions = computed<RadioOption[]>(() => {
+  const options: RadioOption[] = [
+    { label: "啟用", value: true },
+    { label: "停用", value: false },
+  ];
+  if (formMode.value === "query") {
+    options.unshift({ label: "全部", value: null });
+  }
+  return options;
+});
 
 // 表單狀態管理
 const toggleVal = ref<boolean>(false);
@@ -181,7 +180,7 @@ const formData = reactive<StoreInterface>({
   updateAtS: "",
   updateAtE: "",
 });
-const defaultForm = {
+const defaultForm: StoreInterface = {
   id: 0,
   code: "",
   name: "",
@@ -201,79 +200,74 @@ const defaultForm = {
 };
 const storeTypes = reactive<StoreTypeInterface[]>([]);
 
-const fetchData = async () => {
-  const response = await get<ResponseInterface | StoreInterface[]>();
-  const items = Array.isArray(response) ? response : response?.body;
-  if (Array.isArray(items)) {
-    listData.splice(0, listData.length, ...items);
-    console.log(listData);
-  }
+const fetchData = () => {
+  get<ResponseInterface>()
+    .then(({ header, body }) => {
+      listData.splice(0, listData.length, ...body);
+    })
+    .catch((err) => {
+      console.error(err);
+      error("獲取資料失敗");
+    });
 };
 
-const edit = (item: StoreInterface) => {
+const edit = (item: StoreTypeInterface) => {
   openForm("edit", item);
 };
 
-const openForm = (mode: FormMode, item: StoreInterface = defaultForm) => {
+const openForm = (mode: FormMode, item: StoreTypeInterface = defaultForm) => {
   formMode.value = mode;
-  // 複製一份資料給表單，確保不會直接修改表格資料
   Object.assign(formData, { ...item });
   toggleVal.value = true;
 };
 
-// 關閉表單並重設狀態
 const closeForm = () => {
   toggleVal.value = false;
   Object.assign(formData, { ...defaultForm });
 };
 
-// 處理表單提交
-const handleFormSubmit = async ({
-  mode,
-  data,
-}: {
-  mode: FormMode;
-  data: StoreInterface;
-}) => {
-  try {
-    console.log(data);
-    debugger;
-    const response = await submit(mode, data);
-    // 如果是查詢，直接更新列表；如果是新增/修改，建議重新獲取全部資料
-    if (mode === "query") {
-      const items = Array.isArray(response) ? response : response?.body;
-      if (Array.isArray(items)) {
-        listData.splice(0, listData.length, ...items);
+const handleFormSubmit = async () => {
+  submit(formMode.value, formData)
+    .then(({ header, body }) => {
+      success("提交成功");
+      if (formMode.value === "query") {
+        listData.splice(0, listData.length, ...body);
+      } else {
+        fetchData();
       }
-    } else {
-      await fetchData(); // 封裝後的重整函數
+      closeForm();
+    })
+    .catch((err) => {
+      console.error(err);
+      error("提交失敗");
+    });
+};
+
+const remove = async (item: StoreTypeInterface) => {
+  confirm({ title: `確定刪除 ${item.name} 嗎?` }).then((res) => {
+    if (res.isConfirmed) {
+      del(item.id)
+        .then(() => {
+          success("刪除成功");
+          fetchData();
+        })
+        .catch((error) => {
+          console.error("刪除失敗", error);
+          error("刪除失敗");
+        });
     }
-    closeForm();
-  } catch (error) {
-    console.error("提交失敗", error);
-    // 此處可擴充全域 Snackbar 提示
-  }
+  });
 };
 
-// 處理刪除事件
-const remove = async (id: number) => {
-  try {
-    const { header } = await del(id);
-    await fetchData();
-  } catch (error) {
-    console.error("刪除失敗", error);
-    // 此處可擴充全域 Snackbar 提示
-  }
-};
-
-onMounted(async () => {
-  await fetchData();
-
-  const { get: getStoreTypes } = useApiClient("/store-type");
-  const res = await getStoreTypes<ResponseInterface | StoreTypeInterface[]>();
-  const items = Array.isArray(res) ? res : res?.body;
-  if (Array.isArray(items)) {
-    storeTypes.splice(0, storeTypes.length, ...items);
-  }
+onMounted(() => {
+  fetchData();
+  getStoreType<ResponseInterface>()
+    .then(({ header, body }) => {
+      storeTypes.splice(0, storeTypes.length, ...body);
+    })
+    .catch((err) => {
+      console.error(err);
+      error("獲取店點類別失敗");
+    });
 });
 </script>

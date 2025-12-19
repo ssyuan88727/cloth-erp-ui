@@ -1,38 +1,28 @@
 <template>
   <v-autocomplete
-    v-model="internalValue"
+    v-model="model"
+    :items="items"
+    :label="label"
+    :item-title="itemTitle"
+    :item-value="itemValue"
+    variant="outlined"
+    density="compact"
+    hide-details="auto"
+    color="primary"
+    clearable
+    auto-select-first
+    no-data-text="查無匹配資料"
     v-bind="$attrs"
-    :variant="variant"
-    :class="classAtr"
-    :clearable="clearable"
   />
 </template>
+
 <script setup lang="ts">
-const {
-  modelValue = "",
-  variant = "outlined",
-  classAtr = "mb-3",
-  clearable = true,
-} = defineProps<{
-  modelValue?: string | string[] | number | number[] | null;
-  variant?:
-    | "outlined"
-    | "plain"
-    | "underlined"
-    | "filled"
-    | "solo"
-    | "solo-inverted"
-    | "solo-filled";
-  classAtr?: string;
-  clearable?: boolean;
-}>();
+const model = defineModel<any>();
 
-const emit = defineEmits(["update:modelValue"]);
-
-const internalValue = computed({
-  get: () => modelValue,
-  set: (newValue) => {
-    emit("update:modelValue", newValue);
-  },
+defineProps({
+  items: { type: Array, required: true },
+  label: String,
+  itemTitle: { type: String, default: "title" },
+  itemValue: { type: String, default: "value" },
 });
 </script>

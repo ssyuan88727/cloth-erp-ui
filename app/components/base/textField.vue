@@ -7,13 +7,13 @@
     density="compact"
     hide-details="auto"
     clearable
-    class="mb-2"
+    color="primary"
     v-bind="$attrs"
   />
 </template>
 
 <script setup lang="ts">
-const model = defineModel<string | number>();
+const model = defineModel<string | number | null>();
 
 interface Props {
   label?: string;

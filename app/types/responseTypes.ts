@@ -1,65 +1,100 @@
 export interface SupplierInterface {
   id: number;
-  code: string;
-  name: string;
-  contactName: string;
-  contactPhone: string;
-  address: string;
-  isActive: boolean;
-  createAt: string;
-  updateAt: string;
+  code: string | null;
+  name: string | null;
+  contactName: string | null;
+  contactPhone: string | null;
+  address: string | null;
+  isActive: boolean | null;
+  createAt: string | null;
+  updateAt: string | null;
   // query
-  createAtS: string;
-  createAtE: string;
-  updateAtS: string;
-  updateAtE: string;
+  createAtS: string | null;
+  createAtE: string | null;
+  updateAtS: string | null;
+  updateAtE: string | null;
 }
 
 export interface ReturnReasonInterface {
   id: number;
-  reason: string;
+  reason: string | null;
 }
 
 export interface MemberInterface {
   id: number;
-  code: string;
-  name: string;
-  phone: string;
-  email: string;
-  address: string;
-  joinDate: string;
-  totQty: number;
-  totAmt: number;
-  totCnt: number;
-  isActive: boolean;
-  createAt: string;
-  updateAt: string;
+  code: string | null;
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  joinDate: string | null;
+  totQty: number | null;
+  totAmt: number | null;
+  totCnt: number | null;
+  isActive: boolean | null;
+  createAt: string | null;
+  updateAt: string | null;
   // query
-  joinDateS: string;
-  joinDateE: string;
-  createAtS: string;
-  createAtE: string;
-  updateAtS: string;
-  updateAtE: string;
+  joinDateS: string | null;
+  joinDateE: string | null;
+  createAtS: string | null;
+  createAtE: string | null;
+  updateAtS: string | null;
+  updateAtE: string | null;
 }
 
 export interface StoreTypeInterface {
   id: number;
-  name: string;
+  name: string | null;
 }
 
 export interface StoreInterface {
   id: number;
-  code: string;
-  name: string;
+  code: string | null;
+  name: string | null;
   storeType: StoreTypeInterface;
-  storeTypeId: number | number[];
-  isActive: boolean;
-  createAt: string;
-  updateAt: string;
+  storeTypeId: number | number[] | null;
+  isActive: boolean | null;
+  createAt: string | null;
+  updateAt: string | null;
   // query
-  createAtS: string;
-  createAtE: string;
-  updateAtS: string;
-  updateAtE: string;
+  createAtS: string | null;
+  createAtE: string | null;
+  updateAtS: string | null;
+  updateAtE: string | null;
+}
+
+export interface ColorInterface {
+  id: number;
+  code: string | null;
+  name: string | null;
+}
+
+export interface SizeInterface {
+  id: number;
+  code: string | null;
+  name: string | null;
+}
+
+export interface TagInterface {
+  id: number;
+  name: string | null;
+}
+
+export interface ProductInterface {
+  id: number;
+  code: string | null;
+  name: string | null;
+  tags: TagInterface[] | null;
+  unitPrc: number | null;
+  isActive: boolean | null;
+  remark: string | null;
+  createAt: string | null;
+  updateAt: string | null;
+  // query
+  tagIds: number[] | null;
+  createAtS: string | null;
+  createAtE: string | null;
+  updateAtS: string | null;
+  updateAtE: string | null;
 }

@@ -1,65 +1,81 @@
 <template>
-  <v-form ref="formRef" @submit.prevent="submitForm">
-    <v-card-title class="text-h6 font-weight-bold text-primary py-4 px-6">
-      {{ formTitle }}
-    </v-card-title>
-    <v-card-text class="py-4 px-6">
-      <slot />
-    </v-card-text>
-    <v-divider />
-    <v-card-actions
-      class="align-center justify-end py-3 px-6 bg-grey-lighten-4"
-    >
-      <v-btn
-        variant="outlined"
-        color="secondary"
-        @click="closeForm"
-        class="rounded-lg"
-        text="取消"
-      />
-      <v-btn
-        type="submit"
-        color="primary"
-        class="rounded-lg font-weight-bold"
-        :text="formSubmitText"
-      />
-    </v-card-actions>
-  </v-form>
+  <v-dialog :model-value="modelValue" persistent max-width="800px">
+    <v-card :loading="loading">
+      <v-card-title class="d-flex align-center pa-4">
+        <span class="text-h6 font-weight-bold">{{ title }}</span>
+        <v-spacer />
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          density="comfortable"
+          @click="$emit('update:modelValue', false)"
+        />
+      </v-card-title>
+
+      <v-divider />
+
+      <v-card-text class="pa-4">
+        <v-form ref="formRef" @submit.prevent="handleSubmit">
+          <slot />
+        </v-form>
+      </v-card-text>
+
+      <v-divider />
+
+      <v-card-actions class="pa-4">
+        <v-spacer />
+        <v-btn
+          variant="text"
+          color="grey-darken-1"
+          @click="$emit('update:modelValue', false)"
+          text="取消"
+        />
+        <v-btn
+          color="primary"
+          variant="elevated"
+          :loading="loading"
+          class="px-6"
+          @click="handleSubmit"
+          text="儲存送出"
+        />
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import type { FormMode } from "~/types/baseTypes";
 
-const { mode = "create", formData } = defineProps<{
-  mode: FormMode;
-  formData: object;
+const modelValue = defineModel<boolean>();
+const {
+  mode = "create",
+  loading = false,
+  deletable = false,
+  editable = false,
+} = defineProps<{
+  mode?: FormMode;
+  loading?: boolean;
+  deletable?: boolean;
+  editable?: boolean;
 }>();
-const emit = defineEmits(["submit", "cancel"]);
 
-// 內部 state 避免直接修改 prop
-const formRef = ref<any>(null); // Vuetify form ref
-const formTitle = computed<string>(() => {
+const emit = defineEmits(["update:modelValue", "submit"]);
+const formRef = ref();
+const title = computed(() => {
   switch (mode) {
+    case "create":
+      return "新增";
     case "edit":
-      return "編輯";
+      return "修改";
     case "query":
       return "查詢";
     default:
-      return "新增";
+      return "未知";
   }
 });
-const formSubmitText = computed<string>(() =>
-  mode === "query" ? "查詢" : "儲存"
-);
 
-const submitForm = async () => {
-  if (mode !== "query") {
-    const { valid } = await formRef.value.validate();
-    if (!valid) return;
-  }
-  emit("submit", { mode, data: formData });
-};
-const closeForm = () => {
-  emit("cancel");
+const handleSubmit = async () => {
+  const { valid } = await formRef.value.validate();
+  if (mode === "query" || valid) emit("submit");
 };
 </script>

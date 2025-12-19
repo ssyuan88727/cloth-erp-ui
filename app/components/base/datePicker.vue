@@ -1,35 +1,44 @@
 <template>
-  <v-menu v-model="menu" :close-on-content-click="false">
+  <v-menu v-model="isMenuOpen" :close-on-content-click="false">
     <template v-slot:activator="{ props }">
       <v-text-field
         :model-value="model"
+        v-bind="{ ...props, ...$attrs }"
         :label="label"
         readonly
-        v-bind="props"
         variant="outlined"
         density="compact"
-        prepend-inner-icon="mdi-calendar"
         hide-details="auto"
+        prepend-inner-icon="mdi-calendar"
+        color="primary"
       />
     </template>
     <v-date-picker
-      v-model="dateValue"
+      v-model="internalDate"
       color="primary"
-      @update:model-value="onDateSelected"
+      :min="min"
+      :max="max"
+      @update:model-value="handleDateUpdate"
     />
   </v-menu>
 </template>
 
 <script setup lang="ts">
-const model = defineModel<string>();
-const props = defineProps<{ label?: string }>();
+const model = defineModel<string | null>();
+const {
+  label,
+  min = new Date("1900-01-01"),
+  max = new Date(),
+} = defineProps<{ label?: string; min?: Date; max?: Date }>();
 
-const menu = ref(false);
-const dateValue = ref(model.value ? new Date(model.value) : new Date());
+const isMenuOpen = ref(false);
+const internalDate = ref(model.value ? new Date(model.value) : null);
 
-const onDateSelected = (val: Date) => {
-  // 這裡可以整合日期格式化工具 (如 dayjs)
-  model.value = val.toISOString().split("T")[0];
-  menu.value = false;
+const handleDateUpdate = (newDate: Date | null) => {
+  if (newDate) {
+    // 簡單格式化 YYYY-MM-DD
+    model.value = newDate.toISOString().split("T")[0];
+    isMenuOpen.value = false;
+  }
 };
 </script>

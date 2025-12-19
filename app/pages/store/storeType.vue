@@ -14,43 +14,34 @@
         @click="openForm('query')"
       />
     </template>
-    <template #formDialog>
-      <v-dialog v-model="toggleVal" max-width="600px" persistent>
-        <v-card class="rounded-xl">
-          <!-- 內部使用 DataForm 元件 -->
-          <base-data-form
-            :mode="formMode"
-            :formData="formData"
-            @submit="handleFormSubmit"
-            @cancel="closeForm"
-          >
-            <v-container fluid>
-              <v-row>
-                <v-col cols="6">
-                  <base-text-field
-                    v-model="formData.name"
-                    label="名稱"
-                    :disabled="formMode === 'edit'"
-                    :rules="[required, maxLength(20)]"
-                  />
-                </v-col>
-              </v-row>
-            </v-container>
-          </base-data-form>
-        </v-card>
-      </v-dialog>
-    </template>
-    <template #default>
-      <!-- 3. 資料表格區 (Default Slot) -->
-      <base-data-table
-        :headers="headers"
-        :items="listData"
-        deletable
-        editable
-        @edit="edit"
-        @remove="remove"
-      />
-    </template>
+    <base-data-form
+      v-model="toggleVal"
+      :mode="formMode"
+      :formData="formData"
+      @submit="handleFormSubmit"
+      @cancel="closeForm"
+    >
+      <v-container fluid>
+        <v-row>
+          <v-col cols="6">
+            <base-text-field
+              v-model="formData.name"
+              label="名稱"
+              :disabled="formMode === 'edit'"
+              :rules="[required, maxLength(20)]"
+            />
+          </v-col>
+        </v-row>
+      </v-container>
+    </base-data-form>
+    <base-data-table
+      :headers="headers"
+      :items="listData"
+      deletable
+      editable
+      @edit="edit"
+      @remove="remove"
+    />
   </base-page>
 </template>
 
@@ -58,13 +49,10 @@
 import type { FormMode, ResponseInterface } from "~/types/baseTypes";
 import type { StoreTypeInterface } from "~/types/responseTypes";
 
-definePageMeta({
-  name: "店鋪類別管理",
-});
-
 const headers = [{ title: "名稱", key: "name" }];
 const { required, maxLength } = useValidateRules();
 const { submit, get, del } = useApiClient("/store-type");
+const { confirm, success, error } = useAlert();
 const listData = reactive<StoreTypeInterface[]>([]);
 
 // 表單狀態管理
@@ -74,17 +62,20 @@ const formData = reactive<StoreTypeInterface>({
   id: 0,
   name: "",
 });
-const defaultForm = {
+const defaultForm: StoreTypeInterface = {
   id: 0,
   name: "",
 };
 
-const fetchData = async () => {
-  const response = await get<ResponseInterface | StoreTypeInterface[]>();
-  const items = Array.isArray(response) ? response : response?.body;
-  if (Array.isArray(items)) {
-    listData.splice(0, listData.length, ...items);
-  }
+const fetchData = () => {
+  get<ResponseInterface>()
+    .then(({ header, body }) => {
+      listData.splice(0, listData.length, ...body);
+    })
+    .catch((err) => {
+      console.error(err);
+      error("獲取資料失敗");
+    });
 };
 
 const edit = (item: StoreTypeInterface) => {
@@ -93,55 +84,49 @@ const edit = (item: StoreTypeInterface) => {
 
 const openForm = (mode: FormMode, item: StoreTypeInterface = defaultForm) => {
   formMode.value = mode;
-  // 複製一份資料給表單，確保不會直接修改表格資料
   Object.assign(formData, { ...item });
   toggleVal.value = true;
 };
 
-// 關閉表單並重設狀態
 const closeForm = () => {
   toggleVal.value = false;
   Object.assign(formData, { ...defaultForm });
 };
 
-// 處理表單提交
-const handleFormSubmit = async ({
-  mode,
-  data,
-}: {
-  mode: FormMode;
-  data: StoreTypeInterface;
-}) => {
-  try {
-    const response = await submit(mode, data);
-    // 如果是查詢，直接更新列表；如果是新增/修改，建議重新獲取全部資料
-    if (mode === "query") {
-      const items = Array.isArray(response) ? response : response?.body;
-      if (Array.isArray(items)) {
-        listData.splice(0, listData.length, ...items);
+const handleFormSubmit = async () => {
+  submit(formMode.value, formData)
+    .then(({ header, body }) => {
+      success("提交成功");
+      if (formMode.value === "query") {
+        listData.splice(0, listData.length, ...body);
+      } else {
+        fetchData();
       }
-    } else {
-      await fetchData(); // 封裝後的重整函數
+      closeForm();
+    })
+    .catch((err) => {
+      console.error(err);
+      error("提交失敗");
+    });
+};
+
+const remove = async (item: StoreTypeInterface) => {
+  confirm({ title: `確定刪除 ${item.name} 嗎?` }).then((res) => {
+    if (res.isConfirmed) {
+      del(item.id)
+        .then(() => {
+          success("刪除成功");
+          fetchData();
+        })
+        .catch((error) => {
+          console.error("刪除失敗", error);
+          error("刪除失敗");
+        });
     }
-    closeForm();
-  } catch (error) {
-    console.error("提交失敗", error);
-    // 此處可擴充全域 Snackbar 提示
-  }
+  });
 };
 
-// 處理刪除事件
-const remove = async (id: number) => {
-  try {
-    const { header } = await del(id);
-    await fetchData();
-  } catch (error) {
-    console.error("刪除失敗", error);
-    // 此處可擴充全域 Snackbar 提示
-  }
-};
-
-onMounted(async () => {
-  await fetchData();
+onMounted(() => {
+  fetchData();
 });
 </script>

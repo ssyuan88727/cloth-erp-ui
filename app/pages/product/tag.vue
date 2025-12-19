@@ -1,5 +1,5 @@
 <template>
-  <base-page page-title="退回原因">
+  <base-page page-title="標籤管理">
     <template #actions>
       <base-btn
         text="新增"
@@ -25,10 +25,9 @@
         <v-row>
           <v-col cols="6">
             <base-text-field
-              v-model="formData.reason"
-              label="原因"
-              required
-              :rules="[required, maxLength(20)]"
+              v-model="formData.name"
+              label="名稱"
+              :rules="[required, maxLength(10)]"
             />
           </v-col>
         </v-row>
@@ -47,24 +46,24 @@
 
 <script lang="ts" setup>
 import type { FormMode, ResponseInterface } from "~/types/baseTypes";
-import type { ReturnReasonInterface } from "~/types/responseTypes";
+import type { TagInterface } from "~/types/responseTypes";
 
-const headers = [{ title: "原因", key: "reason", align: "center" }];
+const headers = [{ title: "名稱", key: "name" }];
 const { required, maxLength } = useValidateRules();
-const { submit, get, del } = useApiClient("/return-reason");
-const { confirm, success, error } = useAlert();
-const listData = reactive<ReturnReasonInterface[]>([]);
+const { submit, get, del } = useApiClient("/tag");
+const { confirm, success } = useAlert();
+const listData = reactive<TagInterface[]>([]);
 
 // 表單狀態管理
 const toggleVal = ref<boolean>(false);
 const formMode = ref<FormMode>("create");
-const formData = reactive<ReturnReasonInterface>({
+const formData = reactive<TagInterface>({
   id: 0,
-  reason: "",
+  name: "",
 });
-const defaultForm: ReturnReasonInterface = {
+const defaultForm: TagInterface = {
   id: 0,
-  reason: "",
+  name: "",
 };
 
 const fetchData = () => {
@@ -74,18 +73,14 @@ const fetchData = () => {
     })
     .catch((err) => {
       console.error(err);
-      error("獲取資料失敗");
     });
 };
 
-const edit = (item: ReturnReasonInterface) => {
+const edit = (item: TagInterface) => {
   openForm("edit", item);
 };
 
-const openForm = (
-  mode: FormMode,
-  item: ReturnReasonInterface = defaultForm
-) => {
+const openForm = (mode: FormMode, item: TagInterface = defaultForm) => {
   formMode.value = mode;
   Object.assign(formData, { ...item });
   toggleVal.value = true;
@@ -109,12 +104,11 @@ const handleFormSubmit = async () => {
     })
     .catch((err) => {
       console.error(err);
-      error("提交失敗");
     });
 };
 
-const remove = async (item: ReturnReasonInterface) => {
-  confirm({ title: `確定刪除 ${item.reason} 嗎?` }).then((res) => {
+const remove = async (item: TagInterface) => {
+  confirm({ title: `確定刪除 ${item.name} 嗎?` }).then((res) => {
     if (res.isConfirmed) {
       del(item.id)
         .then(() => {
@@ -123,7 +117,6 @@ const remove = async (item: ReturnReasonInterface) => {
         })
         .catch((error) => {
           console.error("刪除失敗", error);
-          error("刪除失敗");
         });
     }
   });

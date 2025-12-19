@@ -1,6 +1,5 @@
 <template>
-  <base-page page-title="供應商管理">
-    <!-- 功能按鈕區 -->
+  <base-page page-title="顏色管理">
     <template #actions>
       <base-btn
         text="新增"
@@ -18,7 +17,9 @@
     <base-data-form
       v-model="toggleVal"
       :mode="formMode"
+      :formData="formData"
       @submit="handleFormSubmit"
+      @cancel="closeForm"
     >
       <v-container fluid>
         <v-row>
@@ -26,113 +27,89 @@
             <base-text-field
               v-model="formData.code"
               label="代號"
-              required
               :disabled="formMode === 'edit'"
-              :rules="[required, maxLength(10), isAlphaNumeric]"
+              :rules="[required, maxLength(20)]"
             />
           </v-col>
           <v-col>
             <base-text-field
               v-model="formData.name"
               label="名稱"
-              required
               :rules="[required, maxLength(20)]"
             />
           </v-col>
         </v-row>
         <v-row>
           <v-col>
-            <base-text-field
-              v-model="formData.contactName"
-              label="聯絡人"
-              :rules="[maxLength(20)]"
+            <base-autocomplete
+              v-model="formData.tagIds"
+              label="標籤"
+              :items="tags"
+              multiple
+              item-title="name"
+              item-value="id"
             />
           </v-col>
           <v-col>
             <base-text-field
-              v-model="formData.contactPhone"
-              label="聯絡方式"
-              :rules="[isNumber, maxLength(20)]"
+              v-model="formData.unitPrc"
+              label="單價"
+              type="number"
+              :rules="[required]"
             />
           </v-col>
         </v-row>
         <v-row>
-          <v-col>
-            <base-text-field
-              v-model="formData.address"
-              label="地址"
-              :rules="[maxLength(255)]"
-            />
-          </v-col>
-          <v-col>
+          <v-col cols="6">
             <base-radio-group
               v-model="formData.isActive"
               label="狀態"
-              class="mb-3"
               :options="activeOptions"
             />
           </v-col>
         </v-row>
         <v-row>
           <v-col>
-            <base-date-picker
-              v-if="formMode !== 'query'"
-              v-model="formData.createAt"
-              type="datetime-local"
-              disabled
-              label="建立時間"
+            <base-textarea
+              v-model="formData.remark"
+              label="備註"
+              :rules="[maxLength(255)]"
             />
-            <v-row v-if="formMode === 'query'">
-              <v-col>
-                <base-date-picker
-                  v-model="formData.createAtS"
-                  label="建立時間(起)"
-                />
-              </v-col>
-              <v-col>
-                <base-date-picker
-                  v-model="formData.createAtE"
-                  label="建立時間(迄)"
-                />
-              </v-col>
-            </v-row>
-          </v-col>
-          <v-col>
-            <base-date-picker
-              v-if="formMode !== 'query'"
-              v-model="formData.updateAt"
-              disabled
-              type="datetime-local"
-              label="更新時間"
-            />
-            <v-row v-if="formMode === 'query'">
-              <v-col>
-                <base-date-picker
-                  v-model="formData.updateAtS"
-                  label="更新時間(起)"
-                />
-              </v-col>
-              <v-col>
-                <base-date-picker
-                  v-model="formData.updateAtE"
-                  label="更新時間(迄)"
-                />
-              </v-col>
-            </v-row>
           </v-col>
         </v-row>
+        <v-row>
+          <v-col></v-col>
+          <v-col></v-col>
+        </v-row>
+        // todo
+        null; remark: string | null; createAt: string | null; updateAt: string |
+        null; // query  | null; createAtS: string | null;
+        createAtE: string | null; updateAtS: string | null; updateAtE: string |
+        null;
       </v-container>
     </base-data-form>
-    <!-- 3. 資料表格區 (Default Slot) -->
     <base-data-table
       :headers="headers"
       :items="listData"
       deletable
       editable
-      show-sequence
+      show-detail
       @edit="edit"
       @remove="remove"
+      @detail="detail"
     >
+      <template #item.tags="{ item: { tags } }">
+        <v-chip
+          v-for="tag in tags"
+          :key="tag.id"
+          color="primary"
+          class="me-1"
+          size="small"
+          label
+        >
+          {{ tag.name }}
+        </v-chip>
+      </template>
       <template #item.isActive="{ value }">
         <v-chip :color="value ? 'success' : 'error'" size="small" label>
           {{ value ? "啟用" : "停用" }}
@@ -143,30 +120,29 @@
 </template>
 
 <script lang="ts" setup>
-import Swal from "sweetalert2";
 import type {
   FormMode,
   RadioOption,
   ResponseInterface,
 } from "~/types/baseTypes";
-import type { SupplierInterface } from "~/types/responseTypes";
+import type { ProductInterface, TagInterface } from "~/types/responseTypes";
 
-// 表格欄位設定 (動態欄位)
 const headers = [
   { title: "代號", key: "code" },
   { title: "名稱", key: "name" },
-  { title: "聯絡人", key: "contactName" },
-  { title: "聯絡方式", key: "contactPhone" },
-  { title: "地址", key: "address" },
-  { title: "狀態", key: "isActive" },
+  { title: "標籤", key: "tags" },
+  { title: "單價", key: "unitPrc" },
+  { title: "是否啟用", key: "isActive" },
+  { title: "備註", key: "remark" },
   { title: "建立時間", key: "createAt" },
   { title: "更新時間", key: "updateAt" },
 ];
-
-const { required, maxLength, isNumber, isAlphaNumeric } = useValidateRules();
-const { submit, get, del } = useApiClient("/supplier");
-const { confirm, error, success } = useAlert();
-const listData = reactive<SupplierInterface[]>([]);
+const { required, maxLength } = useValidateRules();
+const { submit, get, del } = useApiClient("/product");
+const { get: getProductSku } = useApiClient("/productSku");
+const { get: getTag } = useApiClient("/tag");
+const { confirm, success } = useAlert();
+const listData = reactive<ProductInterface[]>([]);
 const activeOptions = computed<RadioOption[]>(() => {
   const options: RadioOption[] = [
     { label: "啟用", value: true },
@@ -177,37 +153,40 @@ const activeOptions = computed<RadioOption[]>(() => {
   }
   return options;
 });
+const tags = reactive<TagInterface[]>([]);
 
 // 表單狀態管理
 const toggleVal = ref<boolean>(false);
 const formMode = ref<FormMode>("create");
-const formData = reactive<SupplierInterface>({
+const formData = reactive<ProductInterface>({
   id: 0,
   code: "",
   name: "",
-  contactName: "",
-  contactPhone: "",
-  address: "",
-  isActive: true,
+  tags: [],
+  unitPrc: null,
+  isActive: null,
+  remark: "",
   createAt: "",
   updateAt: "",
   // query
+  tagIds: [],
   createAtS: "",
   createAtE: "",
   updateAtS: "",
   updateAtE: "",
 });
-const defaultForm: SupplierInterface = {
+const defaultForm: ProductInterface = {
   id: 0,
   code: "",
   name: "",
-  contactName: "",
-  contactPhone: "",
-  address: "",
-  isActive: true,
+  tags: [],
+  unitPrc: null,
+  isActive: null,
+  remark: "",
   createAt: "",
   updateAt: "",
   // query
+  tagIds: [],
   createAtS: "",
   createAtE: "",
   updateAtS: "",
@@ -221,15 +200,14 @@ const fetchData = () => {
     })
     .catch((err) => {
       console.error(err);
-      error("獲取資料失敗");
     });
 };
 
-const edit = (item: SupplierInterface) => {
+const edit = (item: ProductInterface) => {
   openForm("edit", item);
 };
 
-const openForm = (mode: FormMode, item: SupplierInterface = defaultForm) => {
+const openForm = (mode: FormMode, item: ProductInterface = defaultForm) => {
   formMode.value = mode;
   Object.assign(formData, { ...item });
   toggleVal.value = true;
@@ -253,11 +231,10 @@ const handleFormSubmit = async () => {
     })
     .catch((err) => {
       console.error(err);
-      error("提交失敗");
     });
 };
 
-const remove = async (item: SupplierInterface) => {
+const remove = async (item: ProductInterface) => {
   confirm({ title: `確定刪除 ${item.name} 嗎?` }).then((res) => {
     if (res.isConfirmed) {
       del(item.id)
@@ -267,13 +244,31 @@ const remove = async (item: SupplierInterface) => {
         })
         .catch((error) => {
           console.error("刪除失敗", error);
-          error("刪除失敗");
         });
     }
   });
 };
 
+const detail = (item: ProductInterface) => {
+  console.log(item);
+  // TODO
+  // getProductSku<ResponseInterface>(item)
+  //   .then(({ header, body }) => {
+  //     console.log(body);
+  //   })
+  //   .catch((err) => {
+  //     console.error(err);
+  //   });
+};
+
 onMounted(() => {
   fetchData();
+  getTag<ResponseInterface>()
+    .then(({ header, body }) => {
+      tags.splice(0, tags.length, ...body);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 });
 </script>
