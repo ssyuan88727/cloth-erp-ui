@@ -29,8 +29,6 @@
           </v-list-item>
         </v-list>
       </v-menu>
-
-      <slot name="actions" />
     </v-toolbar>
 
     <v-data-table
@@ -65,7 +63,7 @@
           icon="mdi-eye"
           variant="text"
           color="secondary"
-          @click="$emit('detail', item)"
+          @click="$emit('detail', item.id)"
         />
       </template>
       <template #item.serial="{ index }">
@@ -110,7 +108,6 @@ const {
 const expanded = ref([]);
 const visibleKeys = ref(headers.map((h) => h.key));
 
-// 根據使用者勾選，動態過濾顯示的標題
 const activeHeaders = computed(() => {
   const newHeader = headers.filter((h) => visibleKeys.value.includes(h.key));
   if (showDetail) {
@@ -144,14 +141,13 @@ const activeHeaders = computed(() => {
     width: 50,
   });
   return newHeader.map((header) => {
-    Object.assign(header, { ...header, align: "center", nowrap: true });
+    Object.assign(header, { ...header, align: header.align || "center", nowrap: true });
     return header;
   });
 });
 </script>
 
 <style scoped>
-/* 效能與視覺優化：強制不換行 */
 .base-data-table :deep(.v-data-table-header__content) {
   white-space: nowrap !important;
   font-weight: 600;

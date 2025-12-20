@@ -4,6 +4,7 @@ export default defineNuxtPlugin(() => {
   const Toast = Swal.mixin({
     toast: true,
     position: "top-end",
+    target: "body",
     showConfirmButton: false,
     timer: 3000,
     timerProgressBar: true,
@@ -14,6 +15,7 @@ export default defineNuxtPlugin(() => {
   const Confirm = Swal.mixin({
     cancelButtonColor: "#CFD8DC",
     reverseButtons: true,
+    target: "body",
     customClass: {
       confirmButton: `${btnClass} bg-primary`,
       cancelButton: `${btnClass} bg-grey`,

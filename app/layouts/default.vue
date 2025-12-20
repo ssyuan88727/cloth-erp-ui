@@ -44,9 +44,6 @@
 
     <v-app-bar elevation="1">
       <v-app-bar-nav-icon @click="drawer = !drawer" />
-      <v-app-bar-title class="text-subtitle-1 font-weight-bold">
-        {{ currentPageTitle }}
-      </v-app-bar-title>
       <v-spacer />
       <v-btn icon="mdi-bell-outline" variant="text" />
       <v-btn icon="mdi-account-circle" variant="text" />
@@ -93,10 +90,17 @@ const menuData: Record<string, any> = {
       { title: "標籤管理", path: "/product/tag" },
     ],
   },
+  purchase: {
+    title: "採購管理",
+    icon: "mdi-cart",
+    children: [
+      { title: "採購訂單", path: "/purchase/purchaseOrder" },
+      { title: "收貨單", path: "/purchase/purchaseReceipt" },
+    ],
+  },
   setting: {
     title: "系統設定",
     icon: "mdi-cog",
-    idx: 999,
     children: [{ title: "退回原因", path: "/setting/returnReason" }],
   },
 };
@@ -108,22 +112,9 @@ const sortedMenuItems = computed(() => {
   );
 });
 
-// 3. 動態取得當前頁面標題
-const currentPageTitle = computed(() => {
-  // 遍歷選單找尋匹配路徑的標題
-  for (const item of sortedMenuItems.value) {
-    if (item.path === route.path) return item.title;
-    if (item.children) {
-      const sub = item.children.find((s: any) => s.path === route.path);
-      if (sub) return sub.title;
-    }
-  }
-  return "工作面板";
-});
 </script>
 
 <style scoped>
-/* 針對 Vuetify 的 Active Link 樣式微調 */
 :deep(.v-list-item--active) {
   background-color: rgb(var(--v-theme-primary), 0.1);
   color: rgb(var(--v-theme-primary)) !important;

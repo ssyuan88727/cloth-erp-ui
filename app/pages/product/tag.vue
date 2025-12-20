@@ -1,46 +1,18 @@
 <template>
-  <base-page page-title="標籤管理">
+  <base-page title="標籤管理">
     <template #actions>
-      <base-btn
-        text="新增"
-        prepend-icon="mdi-plus"
-        color="primary"
-        @click="openForm('create')"
-      />
-      <base-btn
-        text="查詢"
-        prepend-icon="mdi-magnify"
-        color="grey"
-        @click="openForm('query')"
-      />
+      <base-btn text="新增" prepend-icon="mdi-plus" color="primary" @click="openForm('create')" />
+      <base-btn text="查詢" prepend-icon="mdi-magnify" color="grey" @click="openForm('query')" />
     </template>
-    <base-data-form
-      v-model="toggleVal"
-      :mode="formMode"
-      :formData="formData"
-      @submit="handleFormSubmit"
-      @cancel="closeForm"
-    >
-      <v-container fluid>
-        <v-row>
-          <v-col cols="6">
-            <base-text-field
-              v-model="formData.name"
-              label="名稱"
-              :rules="[required, maxLength(10)]"
-            />
-          </v-col>
-        </v-row>
-      </v-container>
+    <base-data-form v-model="toggleForm" :mode="formMode" :formData="formData" @submit="handleFormSubmit"
+      @cancel="closeForm">
+      <v-row>
+        <v-col cols="6">
+          <base-text-field v-model="formData.name" label="名稱" :rules="[required, maxLength(10)]" />
+        </v-col>
+      </v-row>
     </base-data-form>
-    <base-data-table
-      :headers="headers"
-      :items="listData"
-      deletable
-      editable
-      @edit="edit"
-      @remove="remove"
-    />
+    <base-data-table :headers="headers" :items="listData" deletable editable @edit="edit" @remove="remove" />
   </base-page>
 </template>
 
@@ -55,7 +27,7 @@ const { confirm, success } = useAlert();
 const listData = reactive<TagInterface[]>([]);
 
 // 表單狀態管理
-const toggleVal = ref<boolean>(false);
+const toggleForm = ref<boolean>(false);
 const formMode = ref<FormMode>("create");
 const formData = reactive<TagInterface>({
   id: 0,
@@ -83,11 +55,11 @@ const edit = (item: TagInterface) => {
 const openForm = (mode: FormMode, item: TagInterface = defaultForm) => {
   formMode.value = mode;
   Object.assign(formData, { ...item });
-  toggleVal.value = true;
+  toggleForm.value = true;
 };
 
 const closeForm = () => {
-  toggleVal.value = false;
+  toggleForm.value = false;
   Object.assign(formData, { ...defaultForm });
 };
 

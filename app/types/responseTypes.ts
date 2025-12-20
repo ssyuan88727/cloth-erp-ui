@@ -98,3 +98,79 @@ export interface ProductInterface {
   updateAtS: string | null;
   updateAtE: string | null;
 }
+
+export interface ProductSkuInterface {
+  id: number;
+  skuCode: string | null;
+  costPrc: number | null;
+  isActive: boolean | null;
+  // create
+  productId: number;
+  supplierId: number | null;
+  colorId: number | null;
+  sizeId: number | null;
+}
+
+export interface PurchaseReceiptInterface {
+  id: number;
+  confirmed: boolean | null;
+  signed: boolean | null;
+  code: string;
+  date: string;
+  supplierId: number;
+  originalCode: string;
+  totQty: number;
+  totAmt: number;
+  remark: string;
+  createAt: string;
+  updateAt: string;
+  // query
+  dateS: string;
+  dateE: string;
+  createAtS: string;
+  createAtE: string;
+  updateAtS: string;
+  updateAtE: string;
+}
+
+export interface PurchaseReceiptDetailInterface {
+  id: number;
+  purchaseReceiptId: number;
+  productSkuId: number;
+  qty: number;
+  costPrc: number;
+  subTot: number;
+}
+
+export interface PurchaseOrderInterface {
+  id: number;
+  confirmed: boolean;
+  signed: boolean;
+  code: string;
+  date: string;
+  supplierId: number;
+  totQty: number;
+  totAmt: number;
+  remark: string | null;
+  createAt: string;
+  updateAt: string;
+  // query
+  supplierIds: number[] | null;
+  dateS: string;
+  dateE: string;
+  createAtS: string;
+  createAtE: string;
+  updateAtS: string;
+  updateAtE: string;
+}
+
+export interface PurchaseOrderDetailInterface {
+  id: number;
+  purchaseOrderId: number;
+  productSkuId: number;
+  purchaseQty: number;
+  receivedQty: number;
+  undeliveredQty: number;
+  costPrc: number;
+  subTot: number;
+}

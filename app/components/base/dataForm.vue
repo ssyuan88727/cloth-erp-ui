@@ -4,19 +4,16 @@
       <v-card-title class="d-flex align-center pa-4">
         <span class="text-h6 font-weight-bold">{{ title }}</span>
         <v-spacer />
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          density="comfortable"
-          @click="$emit('update:modelValue', false)"
-        />
+        <v-btn icon="mdi-close" variant="text" density="comfortable" @click="$emit('update:modelValue', false)" />
       </v-card-title>
 
       <v-divider />
 
       <v-card-text class="pa-4">
         <v-form ref="formRef" @submit.prevent="handleSubmit">
-          <slot />
+          <v-container fluid>
+            <slot />
+          </v-container>
         </v-form>
       </v-card-text>
 
@@ -24,20 +21,8 @@
 
       <v-card-actions class="pa-4">
         <v-spacer />
-        <v-btn
-          variant="text"
-          color="grey-darken-1"
-          @click="$emit('update:modelValue', false)"
-          text="取消"
-        />
-        <v-btn
-          color="primary"
-          variant="elevated"
-          :loading="loading"
-          class="px-6"
-          @click="handleSubmit"
-          text="儲存送出"
-        />
+        <v-btn variant="text" color="grey-darken-1" @click="$emit('update:modelValue', false)" text="取消" />
+        <v-btn color="primary" variant="elevated" :loading="loading" class="px-6" @click="handleSubmit" text="儲存送出" />
       </v-card-actions>
     </v-card>
   </v-dialog>

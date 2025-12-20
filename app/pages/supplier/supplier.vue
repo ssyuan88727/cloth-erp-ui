@@ -1,138 +1,65 @@
 <template>
-  <base-page page-title="供應商管理">
-    <!-- 功能按鈕區 -->
+  <base-page title="供應商管理">
     <template #actions>
-      <base-btn
-        text="新增"
-        prepend-icon="mdi-plus"
-        color="primary"
-        @click="openForm('create')"
-      />
-      <base-btn
-        text="查詢"
-        prepend-icon="mdi-magnify"
-        color="grey"
-        @click="openForm('query')"
-      />
+      <base-btn text="新增" prepend-icon="mdi-plus" color="primary" @click="openForm('create')" />
+      <base-btn text="查詢" prepend-icon="mdi-magnify" color="grey" @click="openForm('query')" />
     </template>
-    <base-data-form
-      v-model="toggleVal"
-      :mode="formMode"
-      @submit="handleFormSubmit"
-    >
-      <v-container fluid>
-        <v-row>
-          <v-col>
-            <base-text-field
-              v-model="formData.code"
-              label="代號"
-              required
-              :disabled="formMode === 'edit'"
-              :rules="[required, maxLength(10), isAlphaNumeric]"
-            />
-          </v-col>
-          <v-col>
-            <base-text-field
-              v-model="formData.name"
-              label="名稱"
-              required
-              :rules="[required, maxLength(20)]"
-            />
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <base-text-field
-              v-model="formData.contactName"
-              label="聯絡人"
-              :rules="[maxLength(20)]"
-            />
-          </v-col>
-          <v-col>
-            <base-text-field
-              v-model="formData.contactPhone"
-              label="聯絡方式"
-              :rules="[isNumber, maxLength(20)]"
-            />
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <base-text-field
-              v-model="formData.address"
-              label="地址"
-              :rules="[maxLength(255)]"
-            />
-          </v-col>
-          <v-col>
-            <base-radio-group
-              v-model="formData.isActive"
-              label="狀態"
-              class="mb-3"
-              :options="activeOptions"
-            />
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <base-date-picker
-              v-if="formMode !== 'query'"
-              v-model="formData.createAt"
-              type="datetime-local"
-              disabled
-              label="建立時間"
-            />
-            <v-row v-if="formMode === 'query'">
-              <v-col>
-                <base-date-picker
-                  v-model="formData.createAtS"
-                  label="建立時間(起)"
-                />
-              </v-col>
-              <v-col>
-                <base-date-picker
-                  v-model="formData.createAtE"
-                  label="建立時間(迄)"
-                />
-              </v-col>
-            </v-row>
-          </v-col>
-          <v-col>
-            <base-date-picker
-              v-if="formMode !== 'query'"
-              v-model="formData.updateAt"
-              disabled
-              type="datetime-local"
-              label="更新時間"
-            />
-            <v-row v-if="formMode === 'query'">
-              <v-col>
-                <base-date-picker
-                  v-model="formData.updateAtS"
-                  label="更新時間(起)"
-                />
-              </v-col>
-              <v-col>
-                <base-date-picker
-                  v-model="formData.updateAtE"
-                  label="更新時間(迄)"
-                />
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-      </v-container>
+    <base-data-form v-model="toggleForm" :mode="formMode" @submit="handleFormSubmit">
+      <v-row>
+        <v-col>
+          <base-text-field v-model="formData.code" label="代號" required :disabled="formMode === 'edit'"
+            :rules="[required, maxLength(10), isAlphaNumeric]" />
+        </v-col>
+        <v-col>
+          <base-text-field v-model="formData.name" label="名稱" required :rules="[required, maxLength(20)]" />
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
+          <base-text-field v-model="formData.contactName" label="聯絡人" :rules="[maxLength(20)]" />
+        </v-col>
+        <v-col>
+          <base-text-field v-model="formData.contactPhone" label="聯絡方式" :rules="[isNumber, maxLength(20)]" />
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
+          <base-text-field v-model="formData.address" label="地址" :rules="[maxLength(255)]" />
+        </v-col>
+        <v-col>
+          <base-radio-group v-model="formData.isActive" label="狀態" class="mb-3" :options="activeOptions" />
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
+          <base-date-picker v-if="formMode !== 'query'" v-model="formData.createAt" type="datetime-local" disabled
+            label="建立時間" />
+          <v-row v-if="formMode === 'query'">
+            <v-col>
+              <base-date-picker v-model="formData.createAtS" label="建立時間(起)" />
+            </v-col>
+            <v-col>
+              <base-date-picker v-model="formData.createAtE" label="建立時間(迄)" />
+            </v-col>
+          </v-row>
+        </v-col>
+        <v-col>
+          <base-date-picker v-if="formMode !== 'query'" v-model="formData.updateAt" disabled type="datetime-local"
+            label="更新時間" />
+          <v-row v-if="formMode === 'query'">
+            <v-col>
+              <base-date-picker v-model="formData.updateAtS" label="更新時間(起)" />
+            </v-col>
+            <v-col>
+              <base-date-picker v-model="formData.updateAtE" label="更新時間(迄)" />
+            </v-col>
+          </v-row>
+        </v-col>
+      </v-row>
     </base-data-form>
     <!-- 3. 資料表格區 (Default Slot) -->
-    <base-data-table
-      :headers="headers"
-      :items="listData"
-      deletable
-      editable
-      show-sequence
-      @edit="edit"
-      @remove="remove"
-    >
+    <base-data-table :headers="headers" :items="listData" deletable editable show-sequence @edit="edit"
+      @remove="remove">
       <template #item.isActive="{ value }">
         <v-chip :color="value ? 'success' : 'error'" size="small" label>
           {{ value ? "啟用" : "停用" }}
@@ -143,7 +70,6 @@
 </template>
 
 <script lang="ts" setup>
-import Swal from "sweetalert2";
 import type {
   FormMode,
   RadioOption,
@@ -179,7 +105,7 @@ const activeOptions = computed<RadioOption[]>(() => {
 });
 
 // 表單狀態管理
-const toggleVal = ref<boolean>(false);
+const toggleForm = ref<boolean>(false);
 const formMode = ref<FormMode>("create");
 const formData = reactive<SupplierInterface>({
   id: 0,
@@ -232,11 +158,11 @@ const edit = (item: SupplierInterface) => {
 const openForm = (mode: FormMode, item: SupplierInterface = defaultForm) => {
   formMode.value = mode;
   Object.assign(formData, { ...item });
-  toggleVal.value = true;
+  toggleForm.value = true;
 };
 
 const closeForm = () => {
-  toggleVal.value = false;
+  toggleForm.value = false;
   Object.assign(formData, { ...defaultForm });
 };
 
